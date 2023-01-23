@@ -141,7 +141,14 @@ class VideoSearchTableGUI extends TableGUI
 
                 return $object->getSeries();
             case 'start':
-                return date('d.m.Y H:i', $row['start_unix']);
+                if(!empty($row['start_unix']))
+                {
+                    return date('d.m.Y H:i', $row['start_unix']);
+                }
+                else
+                {
+                    return $row['startDate'];
+                }
             case 'location':
                 return $row['location'];
         }
