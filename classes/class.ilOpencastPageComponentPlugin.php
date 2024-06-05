@@ -1,10 +1,5 @@
 <?php
 
-/* Copyright (c) 1998-2009 ILIAS open source, Extended GPL, see https://github.com/ILIAS-eLearning/ILIAS/tree/trunk/docs/LICENSE */
-
-require_once __DIR__ . "/../vendor/autoload.php";
-require_once __DIR__ . '/../../../../Repository/RepositoryObject/OpenCast/vendor/autoload.php';
-
 use srag\DIC\OpencastPageComponent\Util\LibraryLanguageInstaller;
 use srag\RemovePluginDataConfirm\OpencastPageComponent\PluginUninstallTrait;
 
@@ -65,8 +60,10 @@ class ilOpencastPageComponentPlugin extends ilPageComponentPlugin
         }
 
         if (!$main_plugin->isActive() || !version_compare(
-                $main_plugin->getVersion(), self::MAIN_PLUGIN_VERSION_NEEDED, ">="
-            )) {
+            $main_plugin->getVersion(),
+            self::MAIN_PLUGIN_VERSION_NEEDED,
+            ">="
+        )) {
             throw new ilPluginException(
                 'Please update and activate the OpenCast main plugin to version ' . self::MAIN_PLUGIN_VERSION_NEEDED . ' or higher.'
             );

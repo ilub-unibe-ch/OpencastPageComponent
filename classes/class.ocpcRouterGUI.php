@@ -1,8 +1,5 @@
 <?php
 
-require_once __DIR__ . "/../vendor/autoload.php";
-require_once __DIR__ . '/../../../../Repository/RepositoryObject/OpenCast/vendor/autoload.php';
-
 use ILIAS\DI\Container;
 use srag\DIC\OpenCast\Exception\DICException;
 use srag\DIC\OpencastPageComponent\DICTrait;
@@ -56,10 +53,7 @@ class ocpcRouterGUI
      * @var ACLUtils
      */
     private $acl_utils;
-    /**
-     * @var \srag\Plugins\Opencast\DI\OpencastDIC
-     */
-    private $legacy_container;
+    private OpencastDIC $legacy_container;
     /**
      * @var Container
      */
@@ -68,10 +62,7 @@ class ocpcRouterGUI
      * @var \ilGlobalTemplateInterface
      */
     private $main_tpl;
-    /**
-     * @var \ilOpencastPageComponentPlugin
-     */
-    private $plugin;
+    private \ilOpencastPageComponentPlugin $plugin;
     private ilOpenCastPlugin $opencast_plugin;
 
     private \srag\Plugins\Opencast\Container\Container $container;
@@ -84,25 +75,26 @@ class ocpcRouterGUI
         $this->container = Init::init($DIC);
         $this->main_tpl = $DIC->ui()->mainTemplate();
 
-        $this->opencast_plugin =$this->container->plugin();
+        $this->opencast_plugin = $this->container->plugin();
         $this->legacy_container = $this->container->legacy();
 
         $this->legacy_container->overwriteService(
             'upload_handler',
-            function (): \xoctFileUploadHandlerGUI {
-                return new xoctFileUploadHandlerGUI(
-                    $this->legacy_container->upload_storage_service(),
-                    $this->dic->ctrl()->getLinkTargetByClass(
-                        [ilObjPluginDispatchGUI::class, ocpcRouterGUI::class, xoctFileUploadHandlerGUI::class], 'upload'
-                    ),
-                    $this->dic->ctrl()->getLinkTargetByClass(
-                        [ilObjPluginDispatchGUI::class, ocpcRouterGUI::class, xoctFileUploadHandlerGUI::class], 'info'
-                    ),
-                    $this->dic->ctrl()->getLinkTargetByClass(
-                        [ilObjPluginDispatchGUI::class, ocpcRouterGUI::class, xoctFileUploadHandlerGUI::class], 'remove'
-                    )
-                );
-            }
+            fn (): \xoctFileUploadHandlerGUI => new xoctFileUploadHandlerGUI(
+                $this->legacy_container->upload_storage_service(),
+                $this->dic->ctrl()->getLinkTargetByClass(
+                    [ilObjPluginDispatchGUI::class, ocpcRouterGUI::class, xoctFileUploadHandlerGUI::class],
+                    'upload'
+                ),
+                $this->dic->ctrl()->getLinkTargetByClass(
+                    [ilObjPluginDispatchGUI::class, ocpcRouterGUI::class, xoctFileUploadHandlerGUI::class],
+                    'info'
+                ),
+                $this->dic->ctrl()->getLinkTargetByClass(
+                    [ilObjPluginDispatchGUI::class, ocpcRouterGUI::class, xoctFileUploadHandlerGUI::class],
+                    'remove'
+                )
+            )
         );
 
         $this->event_repository = $this->container[EventAPIRepository::class];
@@ -187,15 +179,15 @@ class ocpcRouterGUI
                 // this is necessary because the 'required'-function of the checkbox doesn't work currently
                 // otherwise, $data would just be null
                 $this->main_tpl->setOnScreenMessage(
-                    'failure', self::plugin()->getPluginObject()->txt('event_error_alert_accpet_terms_of_use')
+                    'failure',
+                    self::plugin()->getPluginObject()->txt('event_error_alert_accpet_terms_of_use')
                 );
                 $this->dic->mainTemplate()->loadStandardTemplate();
                 $this->dic->mainTemplate()->setContent($this->dic->ui()->renderer()->render($form));
                 $this->dic->mainTemplate()->printToStdout();
                 return;
-            } else {
-                ToUManager::setToUAccepted($this->dic->user()->getId());
             }
+            ToUManager::setToUAccepted($this->dic->user()->getId());
         }
 
         if (!$data) {
@@ -247,10 +239,13 @@ class ocpcRouterGUI
 
             // Here we only get the admin default workflow parameters.
             $default_value = $param->getDefaultValueAdmin();
-
-            if (!isset($from_data->$id) && $default_value == WorkflowParameter::VALUE_ALWAYS_ACTIVE) {
-                $default_parameter->$id = "true";
+            if (isset($from_data->$id)) {
+                continue;
             }
+            if ($default_value != WorkflowParameter::VALUE_ALWAYS_ACTIVE) {
+                continue;
+            }
+            $default_parameter->$id = "true";
         }
         return $default_parameter;
     }
