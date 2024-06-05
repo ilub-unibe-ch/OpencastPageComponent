@@ -71,19 +71,10 @@ class VideoSearchTableGUI extends ilTable2GUI
         $this->plugin = ilOpencastPageComponentPlugin::getInstance();
         $this->command_url = $command_url;
         $this->opencast_plugin = ilOpenCastPlugin::getInstance();
-        $opencast_dic = OpencastDIC::getInstance();
+        $legacy_container = $opencastContainer->legacy();
+        $this->event_repository = $opencastContainer[EventAPIRepository::class];
+        $this->series_repository = $opencastContainer[SeriesAPIRepository::class];
 
-        if (method_exists($opencast_dic, 'event_repository')) {
-            $this->event_repository = $opencast_dic->event_repository();
-        } elseif (!empty($opencastContainer)) {
-            $this->event_repository = $opencastContainer[EventAPIRepository::class];
-        }
-
-        if (method_exists($opencast_dic, 'series_repository')) {
-            $this->series_repository = $opencast_dic->series_repository();
-        } elseif (!empty($opencastContainer)) {
-            $this->series_repository = $opencastContainer->get(SeriesAPIRepository::class);
-        }
 
         parent::__construct($parent_gui, $parent_cmd);
         $this->initId();    // this is necessary so the offset and order can be determined

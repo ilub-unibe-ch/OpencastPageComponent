@@ -26,6 +26,7 @@ use srag\Plugins\Opencast\UI\Input\Plupload;
 use srag\Plugins\Opencast\DI\OpencastDIC;
 use srag\Plugins\Opencast\Util\FileTransfer\UploadStorageService;
 use srag\Plugins\OpencastPageComponent\Authorization\TokenRepository;
+use srag\Plugins\Opencast\Container\Init;
 
 /**
  * Class ocpcRouterGUI
@@ -58,7 +59,7 @@ class ocpcRouterGUI
     /**
      * @var \srag\Plugins\Opencast\DI\OpencastDIC
      */
-    private $opencast_dic;
+    private $legacy_container;
     /**
      * @var Container
      */
@@ -73,21 +74,24 @@ class ocpcRouterGUI
     private $plugin;
     private ilOpenCastPlugin $opencast_plugin;
 
+    private \srag\Plugins\Opencast\Container\Container $container;
+
     public function __construct()
     {
         global $DIC;
-        global $DIC, $opencastContainer;
-        $this->plugin = ilOpencastPageComponentPlugin::getInstance();
-        $this->main_tpl = $DIC->ui()->mainTemplate();
         $this->dic = $DIC;
-        PluginConfig::setApiSettings();
-        $this->opencast_dic = OpencastDIC::getInstance();
-        $this->opencast_plugin =$this->opencast_dic->plugin();
-        $this->opencast_dic->overwriteService(
+        $this->plugin = ilOpencastPageComponentPlugin::getInstance();
+        $this->container = Init::init($DIC);
+        $this->main_tpl = $DIC->ui()->mainTemplate();
+
+        $this->opencast_plugin =$this->container->plugin();
+        $this->legacy_container = $this->container->legacy();
+
+        $this->legacy_container->overwriteService(
             'upload_handler',
             function (): \xoctFileUploadHandlerGUI {
                 return new xoctFileUploadHandlerGUI(
-                    $this->opencast_dic->upload_storage_service(),
+                    $this->legacy_container->upload_storage_service(),
                     $this->dic->ctrl()->getLinkTargetByClass(
                         [ilObjPluginDispatchGUI::class, ocpcRouterGUI::class, xoctFileUploadHandlerGUI::class], 'upload'
                     ),
@@ -101,8 +105,8 @@ class ocpcRouterGUI
             }
         );
 
-        $this->event_repository = $opencastContainer[EventAPIRepository::class];
-        $this->series_repository = $opencastContainer->get(SeriesAPIRepository::class);
+        $this->event_repository = $this->container[EventAPIRepository::class];
+        $this->series_repository = $this->container[SeriesAPIRepository::class];
     }
 
     public function executeCommand(): void
@@ -132,8 +136,8 @@ class ocpcRouterGUI
                 }
                 $xoctPlayerGUI = new xoctPlayerGUI(
                     $this->event_repository,
-                    $this->opencast_dic->paella_config_storage_service(),
-                    $this->opencast_dic->paella_config_service_factory()
+                    $this->legacy_container->paella_config_storage_service(),
+                    $this->legacy_container->paella_config_service_factory()
                 );
                 $xoctPlayerGUI->streamVideo();
                 break;
@@ -168,7 +172,7 @@ class ocpcRouterGUI
 
         $with_terms_of_use = !ToUManager::hasAcceptedToU($this->dic->user()->getId());
 
-        $form = $this->opencast_dic->event_form_builder()->upload(
+        $form = $this->legacy_container->event_form_builder()->upload(
             $form_action_by_class,
             $with_terms_of_use
         );
@@ -216,7 +220,7 @@ class ocpcRouterGUI
             new UploadEventRequest(
                 new UploadEventRequestPayload(
                     $metadata,
-                    $this->opencast_dic->acl_utils()->getBaseACLForUser(xoctUser::getInstance($this->dic->user())),
+                    $this->legacy_container->acl_utils()->getBaseACLForUser(xoctUser::getInstance($this->dic->user())),
                     new Processing(
                         PluginConfig::getConfig(PluginConfig::F_WORKFLOW),
                         $this->getDefaultWorkflowParameters($data['workflow_configuration']['object'] ?? null)
@@ -225,7 +229,7 @@ class ocpcRouterGUI
                 )
             )
         );
-        $this->opencast_dic->upload_storage_service()->delete($data['file']['file']['id']);
+        $this->legacy_container->upload_storage_service()->delete($data['file']['file']['id']);
 
         $this->main_tpl->setOnScreenMessage('success', $this->plugin->txt('msg_created'), true);
         $this->cancel();

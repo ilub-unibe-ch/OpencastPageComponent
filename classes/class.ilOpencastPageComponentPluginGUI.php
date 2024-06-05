@@ -16,6 +16,8 @@ use srag\Plugins\Opencast\DI\OpencastDIC;
 use srag\Plugins\OpencastPageComponent\Authorization\TokenRepository;
 use srag\Plugins\OpencastPageComponent\Config\Config;
 use srag\Plugins\OpencastPageComponent\Utils\OpencastPageComponentTrait;
+use srag\Plugins\Opencast\Container\Init;
+use ILIAS\Data\URI;
 
 /**
  * Class ilOpencastPageComponentPluginGUI
@@ -58,6 +60,7 @@ class ilOpencastPageComponentPluginGUI extends ilPageComponentPluginGUI
      * @var \ilGlobalTemplateInterface
      */
     private $main_tpl;
+    private \srag\Plugins\Opencast\Container\Container $container;
     public $player_url;
 
     /**
@@ -67,7 +70,7 @@ class ilOpencastPageComponentPluginGUI extends ilPageComponentPluginGUI
     /**
      * @var \srag\Plugins\Opencast\DI\OpencastDIC
      */
-    protected $opencast_dic;
+    protected $legacy_container;
     /**
      * @var EventAPIRepository
      */
@@ -82,20 +85,22 @@ class ilOpencastPageComponentPluginGUI extends ilPageComponentPluginGUI
      */
     public function __construct()
     {
-        global $DIC, $opencastContainer;
+        global $DIC;
         $this->dic = $DIC;
         $this->main_tpl = $this->dic->ui()->mainTemplate();
-        $this->opencast_plugin = ilOpenCastPlugin::getInstance();
+        $this->container = Init::init($DIC);
+        $this->opencast_plugin = $this->container->plugin();
+
         $main_opencast_js_path = $this->opencast_plugin->getDirectory() . '/js/opencast/dist/index.js';
-        PluginConfig::setApiSettings();
         if (file_exists($main_opencast_js_path)) {
             $this->dic->ui()->mainTemplate()->addJavaScript($main_opencast_js_path);
         }
-        $this->opencast_dic = OpencastDIC::getInstance();
-        $this->opencast_dic->overwriteService(
+
+        $this->legacy_container = $this->container->legacy();
+        $this->legacy_container->overwriteService(
             'upload_handler',
             new xoctFileUploadHandlerGUI(
-                $this->opencast_dic->upload_storage_service(),
+                $this->legacy_container->upload_storage_service(),
                 $this->dic->ctrl()->getLinkTargetByClass(
                     [ilObjPluginDispatchGUI::class, ocpcRouterGUI::class, xoctFileUploadHandlerGUI::class], 'upload'
                 ),
@@ -108,11 +113,7 @@ class ilOpencastPageComponentPluginGUI extends ilPageComponentPluginGUI
             )
         );
 
-        if (method_exists($this->opencast_dic, 'event_repository')) {
-            $this->event_repository = $this->opencast_dic->event_repository();
-        } elseif ($opencastContainer && isset($opencastContainer[EventAPIRepository::class])) {
-            $this->event_repository = $opencastContainer[EventAPIRepository::class];
-        }
+        $this->event_repository = $this->container[EventAPIRepository::class];
 
         parent::__construct();
     }
@@ -195,7 +196,7 @@ class ilOpencastPageComponentPluginGUI extends ilPageComponentPluginGUI
             self::CMD_CREATE
         );
 
-        return $this->opencast_dic->event_form_builder()->upload(
+        return $this->legacy_container->event_form_builder()->upload(
             $form_action_by_class,
             $with_terms_of_use
         );
