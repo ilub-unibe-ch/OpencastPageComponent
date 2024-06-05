@@ -339,11 +339,12 @@ class ilOpencastPageComponentPluginGUI extends ilPageComponentPluginGUI
 
     public function create(): void
     {
-        $event_id = filter_input(INPUT_GET, VideoSearchTableGUI::GET_PARAM_EVENT_ID, FILTER_SANITIZE_STRING);
+        $event_id = $this->dic->http()->request()->getQueryParams()[self::PROP_EVENT_ID] ?? null;
+
         $properties = [
             self::PROP_EVENT_ID => $event_id,
-            self::PROP_HEIGHT => Config::getField(Config::KEY_DEFAULT_HEIGHT),
-            self::PROP_WIDTH => Config::getField(Config::KEY_DEFAULT_WIDTH),
+            self::PROP_HEIGHT => max((int) Config::getField(Config::KEY_DEFAULT_HEIGHT), Config::DEFAULT_HEIGHT),
+            self::PROP_WIDTH => max((int) Config::getField(Config::KEY_DEFAULT_WIDTH), Config::DEFAULT_WIDTH),
             self::PROP_POSITION => self::POSITION_LEFT,
             self::PROP_RESPONSIVE => true,
             self::PROP_AS_LINK => (bool) Config::getField(Config::KEY_DEFAULT_AS_LINK)
