@@ -540,7 +540,7 @@ class ilOpencastPageComponentPluginGUI extends ilPageComponentPluginGUI
                 $tpl->setVariable('WIDTH', 'width:100%;');
             }
         }
-        if (array_key_exists(self::PROP_POSITION), $properties) {
+        if (array_key_exists(self::PROP_POSITION, $properties)) {
             switch ($properties[self::PROP_POSITION]) {
                 case self::POSITION_CENTER:
                     $tpl->setVariable('CONTAINER_STYLE', 'text-align:center;');
