@@ -525,20 +525,24 @@ class ilOpencastPageComponentPluginGUI extends ilPageComponentPluginGUI
         $tpl->setVariable('RATIO', $ratio);
         $tpl->setVariable('MAX-WIDTH', $properties[self::PROP_WIDTH]);
         $tpl->setVariable('MAX-HEIGHT', $properties[self::PROP_HEIGHT]);
-        if ($properties[self::PROP_RESPONSIVE] != false) {
-            $tpl->setVariable('WIDTH', 'width:100%;');
+        if (array_key_exists(self::PROP_RESPONSIVE, $properties)) {
+            if ($properties[self::PROP_RESPONSIVE] != false) {
+                $tpl->setVariable('WIDTH', 'width:100%;');
+            }
         }
-        switch ($properties[self::PROP_POSITION]) {
-            case self::POSITION_CENTER:
-                $tpl->setVariable('CONTAINER_STYLE', 'text-align:center;');
-                break;
-            case self::POSITION_RIGHT:
-                $tpl->setVariable('CONTAINER_STYLE', 'text-align:right;');
-                break;
-            case self::POSITION_LEFT:
-            default:
-                $tpl->setVariable('CONTAINER_STYLE', 'text-align:left;');
-                break;
+        if (array_key_exists(self::PROP_POSITION, $properties)) {
+            switch ($properties[self::PROP_POSITION]) {
+                case self::POSITION_CENTER:
+                    $tpl->setVariable('CONTAINER_STYLE', 'text-align:center;');
+                    break;
+                case self::POSITION_RIGHT:
+                    $tpl->setVariable('CONTAINER_STYLE', 'text-align:right;');
+                    break;
+                case self::POSITION_LEFT:
+                default:
+                    $tpl->setVariable('CONTAINER_STYLE', 'text-align:left;');
+                    break;
+            }
         }
     }
 
