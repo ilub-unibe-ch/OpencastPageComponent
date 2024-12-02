@@ -528,8 +528,6 @@ class ilOpencastPageComponentPluginGUI extends ilPageComponentPluginGUI
         if ((bool)($properties[self::PROP_RESPONSIVE] ?? false) === true) {
             $tpl->setVariable('WIDTH', 'width:100%;');
         }
-
-
         switch ($properties[self::PROP_POSITION] ?? null) {
             case self::POSITION_CENTER:
                 $tpl->setVariable('CONTAINER_STYLE', 'text-align:center;');
