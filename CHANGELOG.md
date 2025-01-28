@@ -1,5 +1,13 @@
 # Changelog
 
+## [8.1.0]
+- [FEATURE] use UI Components for the video list. Needs Main plugin Version 
+  8.1.0 or higher
+- [FEATURE] version check for main plugin
+- [IMPROVEMENT] main plugin container switch
+- [FIX] default value of the width and height input fields
+- [FEATURE] use UI Components for the video list. Needs Main plugin Version 8.2.0 or higher
+
 ## [8.0.1]
 - Fixed an issue while installing the plugin from scratch in ILIAS 8
 
