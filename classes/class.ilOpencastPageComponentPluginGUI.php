@@ -419,7 +419,8 @@ class ilOpencastPageComponentPluginGUI extends ilPageComponentPluginGUI
         $this->dic->ctrl()->setParameter($this, self::CUSTOM_CMD, self::CMD_SHOW_UPLOAD_FORM);
         $upload_button->setUrl($this->dic->ctrl()->getLinkTarget($this, self::CMD_INSERT));
         $upload_button->setCaption($this->translator->translate('btn_upload'), false);
-        $this->dic->toolbar()->addButtonInstance($upload_button);
+        //Patch UNIBE remove upload button
+        //$this->dic->toolbar()->addButtonInstance($upload_button);
     }
 
     protected function showUploadForm(): void
